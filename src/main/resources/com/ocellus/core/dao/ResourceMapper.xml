@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ocellus.core.dao.ResourceMapper">
+	
+	<resultMap id="ResourceResult" type="Resource">
+		<id column="RESOURCE_ID" property="resourceId" />
+		<result column="RESOURCE_CODE" property="resourceCode"/>
+		<result column="RESOURCE_NAME" property="resourceName"/>
+		<result column="RESOURCE_URL" property="resourceUrl"/>
+		<result column="RESOURCE_TYPE_CODE" property="resourceTypeCode"/>
+		<result column="PARENT_RESOURCE_CODE" property="parentResourceCode"/>
+		<result column="PROJECT_CODE" property="projectCode"/>
+		<result column="DEPTH" property="depth"/>
+		<result column="RESOURCE_ICON" property="resourceIcon"/>
+		<result column="ACTIVE" property="active"/>
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="Resource">
+		INSERT INTO TB_RESOURCE(
+			RESOURCE_ID,
+			RESOURCE_CODE, 
+			RESOURCE_NAME,
+			RESOURCE_URL,
+			RESOURCE_TYPE_CODE,
+			PARENT_RESOURCE_CODE,
+			PROJECT_CODE,
+			DEPTH,
+			RESOURCE_ICON
+		) VALUES (
+			#{resourceId, jdbcType=CHAR},
+			#{resourceCode, jdbcType=VARCHAR},
+			#{resourceName, jdbcType=VARCHAR},
+			#{resourceUrl, jdbcType=VARCHAR},
+			#{resourceTypeCode, jdbcType=VARCHAR},
+			#{parentResourceCode, jdbcType=VARCHAR},
+			#{projectCode, jdbcType=CHAR},
+			#{depth, jdbcType=NUMERIC},
+			#{resourceIcon, jdbcType=VARCHAR}
+		)
+	</insert>
+	<update id="update" parameterType="Resource">
+		UPDATE TB_RESOURCE
+		SET
+			RESOURCE_CODE = #{resourceCode, jdbcType=VARCHAR},
+			RESOURCE_NAME = #{resourceName, jdbcType=VARCHAR},
+			RESOURCE_URL = #{resourceUrl, jdbcType=VARCHAR},
+			RESOURCE_TYPE_CODE = #{resourceTypeCode, jdbcType=VARCHAR},
+			PARENT_RESOURCE_CODE = #{parentResourceCode, jdbcType=VARCHAR},
+			PROJECT_CODE = #{projectCode, jdbcType=CHAR},
+			DEPTH = #{depth, jdbcType=NUMERIC},
+			RESOURCE_ICON = #{resourceIcon, jdbcType=VARCHAR}
+		WHERE RESOURCE_ID = #{resourceId}
+	</update>
+	<select id="getById" parameterType="string" resultMap="ResourceResult">
+		SELECT 
+			*
+		FROM TB_RESOURCE 
+		WHERE RESOURCE_ID = #{id} AND ACTIVE='1'
+	</select>
+	<select id="getByCode" parameterType="string" resultMap="ResourceResult">
+		SELECT 
+			*
+		FROM TB_RESOURCE 
+		WHERE RESOURCE_CODE = #{code} AND ACTIVE='1'
+	</select>
+	<select id="getByParentCode" parameterType="string" resultMap="ResourceResult">
+		SELECT 
+			*
+		FROM TB_RESOURCE 
+		WHERE PARENT_RESOURCE_CODE = #{code} AND ACTIVE='1'
+	</select>
+	<select id="search" parameterType="map" resultMap="ResourceResult">
+		SELECT 
+			REC.*
+		FROM TB_RESOURCE REC 
+		LEFT JOIN TB_PERMISSION P ON P.RESOURCE_ID = REC.RESOURCE_ID
+		LEFT JOIN TB_ROLE R ON R.ROLE_ID = P.ROLE_ID
+		LEFT JOIN TB_USER_ROLE UR ON UR.ROLE_ID = R.ROLE_ID
+		LEFT JOIN TB_USER U ON U.USER_ID = UR.USER_ID
+		WHERE REC.ACTIVE='1'
+		<if test="userLogin != null and userLogin != ''">
+			AND USER_LOGIN = #{userLogin}
+		</if>
+		ORDER BY REC.DEPTH
+	</select>
+	<delete id="delete" parameterType="string">
+		DELETE FROM TB_RESOURCE WHERE RESOURCE_ID = #{resourceId}
+	</delete>
+	
+</mapper>

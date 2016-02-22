@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ocellus.core.dao.CodeListMapper">
+	
+	<resultMap id="CodeListResult" type="CodeList">
+		<id column="CODE_LIST_ID" property="codeListId" />
+		<result column="PARENT_ID" property="parentId"/>
+		<result column="CODE_KEY" property="codeKey"/>
+		<result column="CODE_VALUE" property="codeValue"/>
+		<result column="GROUP_NAME" property="groupName"/>
+		<result column="DEPTH" property="depth"/>
+		<result column="SORT_ORDER" property="sortOrder"/>
+		<result column="ACTIVE" property="active"/>
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="Resource">
+		INSERT INTO TB_CODE_LIST(
+			CODE_LIST_ID,
+			PARENT_ID,
+			CODE_KEY, 
+			CODE_VALUE,
+			GROUP_NAME,
+			DEPTH,
+			SORT_ORDER
+		) VALUES (
+			#{codeListId, jdbcType=CHAR},
+			#{parentId, jdbcType=VARCHAR},
+			#{codeKey, jdbcType=VARCHAR},
+			#{codeValue, jdbcType=VARCHAR},
+			#{groupName, jdbcType=VARCHAR},
+			#{depth, jdbcType=NUMERIC},
+			#{sortOrder, jdbcType=NUMERIC}
+		)
+	</insert>
+	<update id="update" parameterType="CodeList">
+		UPDATE TB_CODE_LIST
+		SET
+			CODE_KEY = #{codeKey, jdbcType=VARCHAR},
+			PARENT_ID = #{parentId, jdbcType=VARCHAR},
+			CODE_VALUE = #{codeValue, jdbcType=VARCHAR},
+			GROUP_NAME = #{groupName, jdbcType=VARCHAR},
+			DEPTH = #{depth, jdbcType=NUMERIC},
+			SORT_ORDER = #{sortOrder, jdbcType=NUMERIC}
+		WHERE CODE_LIST_ID = #{codeListId}
+	</update>
+	<select id="getById" parameterType="string" resultMap="CodeListResult">
+		SELECT 
+			*
+		FROM TB_CODE_LIST 
+		WHERE CODE_LIST_ID = #{id} AND ACTIVE='1'
+	</select>
+	<select id="getByGroupName" parameterType="string" resultMap="CodeListResult">
+		SELECT 
+			*
+		FROM  TB_CODE_LIST
+		WHERE GROUP_NAME = #{groupName} AND ACTIVE='1' 
+		ORDER BY SORT_ORDER
+	</select>
+	<select id="search" parameterType="map" resultMap="CodeListResult">
+		SELECT 
+			*
+		FROM TB_CODE_LIST 
+		WHERE ACTIVE='1'
+		ORDER BY DEPTH,SORT_ORDER
+	</select>
+	
+</mapper>

@@ -1,0 +1,91 @@
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:aop="http://www.springframework.org/schema/aop" 
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+                           http://www.springframework.org/schema/context  http://www.springframework.org/schema/context/spring-context-3.0.xsd
+                           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd 
+                           http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+                           http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+                           http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd ">
+   
+   
+	<context:property-placeholder location="classpath:conf/db.properties"/>
+	
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${dataSource.driverClass}"/>
+		<property name="jdbcUrl" value="${dataSource.jdbcUrl}"/>
+		<property name="user" value="${dataSource.user}"/>
+		<property name="password" value="${dataSource.password}"/>
+		<property name="minPoolSize" value="${dataSource.minPoolSize}"/>
+ 		<property name="maxPoolSize" value="${dataSource.maxPoolSize}" />
+  		<property name="maxIdleTime" value="${dataSource.maxIdleTime}" />
+  		<property name="acquireIncrement" value="${dataSource.acquireIncrement}" />
+  		<property name="maxStatements" value="${dataSource.maxStatements}" />
+  		<property name="initialPoolSize" value="${dataSource.initialPoolSize}" />
+  		<property name="idleConnectionTestPeriod" value="${dataSource.idleConnectionTestPeriod}" />
+  		<property name="acquireRetryAttempts" value="${dataSource.acquireRetryAttempts}" />
+  		<property name="breakAfterAcquireFailure" value="${dataSource.breakAfterAcquireFailure}" />
+  		<property name="testConnectionOnCheckout" value="${dataSource.testConnectionOnCheckout}" />
+	</bean>
+	
+	<!-- Configure Transaction Manager -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+    <context:component-scan base-package="com.ocellus.*.service">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+    </context:component-scan>
+    <context:component-scan base-package="com.ocellus.*.dao" >
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+    
+    <context:component-scan base-package="com.ocellus"/>
+    <!-- Configure to using @Transaction key word to add transaction management
+	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true"/>
+	-->
+	<task:scheduler id="jobScheduler" pool-size="10"/>
+	
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">  
+        <tx:attributes>  
+ 			<tx:method name="*" propagation="REQUIRED"/>
+        </tx:attributes>  
+    </tx:advice> 
+    <aop:config>  
+        <aop:pointcut id="persistOperation" expression="execution(* com.ocellus.*.service..*.*(..))" />  
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="persistOperation" order="2"/>  
+    </aop:config> 
+    
+    
+    <!-- configure the mybatis -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">        
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="com.ocellus.core.model"></property>
+		<property name="typeHandlersPackage" value="com.ocellus.core.plugins.typehandler"></property>
+		<property name="plugins">
+			<bean class="com.ocellus.core.plugins.paging.interceptor.PaginationInterceptor">
+				<property name="dialect">
+					<bean class="com.ocellus.core.plugins.paging.dialect.MySQLDialect"></bean>
+				</property>
+			</bean>
+		</property>
+	</bean>
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.ocellus.core.dao"/>
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+	</bean>
+	
+	
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+        <property name="basenames" value="common"/>
+    </bean>
+    <bean class="com.ocellus.core.util.ApplicationContextHolder"/>
+     <!-- 支持上传文件 -->  
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver"/>
+   
+</beans>

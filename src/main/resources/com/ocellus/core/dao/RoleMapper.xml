@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ocellus.core.dao.RoleMapper">
+	
+	<resultMap id="RoleResult" type="Role">
+		<id column="ROLE_ID" property="roleId" />
+		<result column="ROLE_CODE" property="roleCode"/>
+		<result column="ROLE_NAME" property="roleName"/>
+		<result column="ROLE_DESCRIPTION" property="roleDesc"/>
+		<result column="ACTIVE" property="active"/>
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="Role">
+		INSERT INTO TB_ROLE(
+			ROLE_ID,
+			ROLE_CODE,
+			ROLE_NAME,
+			ROLE_DESCRIPTION,
+			ACTIVE
+		) VALUES (
+			#{roleId, jdbcType=CHAR},
+			#{roleCode, jdbcType=VARCHAR},
+			#{roleName, jdbcType=VARCHAR},
+			#{roleDesc, jdbcType=VARCHAR},
+			#{active, jdbcType=VARCHAR}
+		)
+	</insert>
+	<update id="update" parameterType="Role">
+		UPDATE TB_ROLE
+		SET
+			ROLE_CODE = #{roleCode, jdbcType=VARCHAR},
+			ROLE_NAME = #{roleName, jdbcType=VARCHAR},
+			ROLE_DESCRIPTION = #{roleDesc, jdbcType=VARCHAR},
+			ACTIVE = #{active, jdbcType=VARCHAR}
+		WHERE ROLE_ID = #{roleId}
+	</update>
+	<select id="getById" parameterType="string" resultMap="RoleResult">
+		SELECT 
+			*
+		FROM TB_ROLE 
+		WHERE ROLE_ID = #{id} 
+	</select>
+	<select id="search" parameterType="map" resultMap="RoleResult">
+		SELECT 
+			*
+		FROM TB_ROLE 
+		<where>
+			<if test="roleCode != null and roleCode != ''">
+			ROLE_CODE like '%${roleCode}%'
+			</if>
+			<if test="roleName != null and roleName != ''">
+			and ROLE_NAME like '%${roleName}%'
+			</if>
+		</where>
+	</select>
+	
+</mapper>

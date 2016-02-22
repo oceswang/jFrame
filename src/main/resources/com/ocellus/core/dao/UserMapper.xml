@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ocellus.core.dao.UserMapper">
+	
+	<resultMap id="UserResult" type="User">
+		<id column="USER_ID" property="userId" />
+		<result column="USER_LOGIN" property="userLogin"/>
+		<result column="PASSWORD" property="password"/>
+		<result column="USER_NAME" property="userName"/>
+		<result column="LATEST_LOGIN_TIME" property="latestLoginTime"/>
+		<result column="USER_STATUS" property="userStatus"/>
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="User">
+		INSERT INTO TB_USER(
+			USER_ID,
+			USER_LOGIN,
+			PASSWORD,
+			USER_NAME,
+			LATEST_LOGIN_TIME, 
+			USER_STATUS
+		) VALUES (
+			#{userId, jdbcType=CHAR},
+			#{userLogin, jdbcType=VARCHAR},
+			#{password, jdbcType=VARCHAR},
+			#{userName, jdbcType=VARCHAR},
+			#{latestLoginTime, jdbcType=TIMESTAMP},
+			#{userStatus, jdbcType=NUMERIC}
+		)
+	</insert>
+	<update id="update" parameterType="User">
+		UPDATE TB_USER
+		SET
+			USER_LOGIN = #{userLogin, jdbcType=VARCHAR},
+			PASSWORD = #{password, jdbcType=VARCHAR},
+			USER_NAME = #{userName, jdbcType=VARCHAR},
+			LATEST_LOGIN_TIME = #{latestLoginTime, jdbcType=TIMESTAMP},
+			USER_STATUS = #{sortOrder, jdbcType=NUMERIC}
+		WHERE USER_ID = #{userId}
+	</update>
+	<select id="getById" parameterType="string" resultMap="UserResult">
+		SELECT 
+			*
+		FROM TB_USER 
+		WHERE USER_ID = #{id} 
+	</select>
+	<select id="getByUserLogin" parameterType="string" resultMap="UserResult">
+		SELECT 
+			*
+		FROM  TB_USER
+		WHERE USER_LOGIN = #{userLogin} 
+	</select>
+	<select id="search" parameterType="map" resultMap="UserResult">
+		SELECT 
+			*
+		FROM TB_USER 
+		<where>
+			<if test="userLogin != null and userLogin != ''">
+			user_login like '%${userLogin}%'
+			</if>
+			<if test="userName != null and userName != ''">
+			and user_name like '%${userName}%'
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertUserRole" parameterType="java.util.List">
+		INSERT INTO TB_USER_ROLE (USER_ID,ROLE_ID) VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(item.user_id,item.role_id)
+		</foreach>
+	</insert>
+	<delete id="deleteUserRole" parameterType="String">
+		DELETE FROM TB_USER_ROLE WHERE USER_ID = #{userId}
+	</delete>
+	
+</mapper>

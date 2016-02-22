@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ocellus.core.dao.SchedJobMapper">
+	
+	<resultMap id="SchedJobResult" type="SchedJob">
+		<id column="JOB_ID" property="jobId" />
+		<result column="JOB_NAME" property="jobName"/>
+		<result column="JOB_CLASS" property="jobClass"/>
+		<result column="JOB_TRIGGER_TYPE" property="jobTriggerType"/>
+		<result column="JOB_TRIGGER_VALUE" property="jobTriggerValue"/>
+		<result column="JOB_LATEST_RUN_TIME" property="latestRunTime"/>
+		<result column="JOB_NEXT_RUN_TIME" property="nextRunTime"/>
+		<result column="JOB_PARAM" property="jobParam" jdbcType="BLOB" />
+		<result column="JOB_STATUS" property="jobStatus"/>
+		<result column="ON_SUCCESS" property="onSuccess"/>
+		<result column="ON_SUCCESS_DELAY" property="onSuccessDelay"/>
+		<result column="ON_FAILED" property="onFailed"/>
+		<result column="ON_FAILED_DELAY" property="onFailedDelay"/>
+		<result column="ON_SUCCESS_WITH_ERROR" property="onSuccessWithError"/>
+		<result column="ON_SUCCESS_WITH_ERROR_DELAY" property="onSuccessWithErrorDelay"/>
+	</resultMap>
+	<resultMap type="SchedJobHistory" id="JobHistoryResult">
+		<id column="HISTORY_ID" property="historyId" />
+		<result column="JOB_RUN_TIME" property="jobRunTime"/>
+		<result column="JOB_ID" property="jobId"/>
+		<result column="JOB_DATA" property="jobData"/>
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="SchedJob">
+		INSERT INTO TB_SCHED_JOB(
+			JOB_ID,
+			JOB_NAME, 
+			JOB_CLASS,
+			JOB_TRIGGER_TYPE,
+			JOB_TRIGGER_VALUE,
+			JOB_LATEST_RUN_TIME,
+			JOB_NEXT_RUN_TIME,
+			JOB_PARAM,
+			JOB_STATUS,
+			ON_SUCCESS,
+			ON_SUCCESS_DELAY,
+			ON_FAILED,
+			ON_FAILED_DELAY,
+			ON_SUCCESS_WITH_ERROR,
+			ON_SUCCESS_WITH_ERROR_DELAY
+		) VALUES (
+			#{jobId, jdbcType=CHAR},
+			#{jobName, jdbcType=VARCHAR},
+			#{jobClass, jdbcType=VARCHAR},
+			#{jobTriggerType, jdbcType=VARCHAR},
+			#{jobTriggerValue, jdbcType=VARCHAR},
+			#{latestRunTime, jdbcType=TIMESTAMP},
+			#{nextRunTime, jdbcType=TIMESTAMP},
+			#{jobParam, jdbcType=BLOB},
+			#{jobStatus, jdbcType=CHAR},
+			#{onSuccess, jdbcType=VARCHAR},
+			#{onSuccessDelay, jdbcType=NUMERIC},
+			#{onFailed, jdbcType=VARCHAR},
+			#{onFailedDelay, jdbcType=NUMERIC},
+			#{onSuccessWithError, jdbcType=VARCHAR},
+			#{onSuccessWithErrorDelay, jdbcType=NUMERIC}
+		)
+	</insert>
+	<update id="update" parameterType="SchedJob">
+		UPDATE TB_SCHED_JOB
+		SET 
+		<if test="jobName != null">
+		JOB_NAME = #{jobName, jdbcType=VARCHAR},
+		</if>
+		<if test="jobClass != null">
+		JOB_CLASS = #{jobClass, jdbcType=VARCHAR},
+		</if>
+		<if test="jobTriggerType != null">
+		JOB_TRIGGER_TYPE = #{jobTriggerType, jdbcType=VARCHAR},
+		</if>
+		<if test="jobTriggerValue != null">
+		JOB_TRIGGER_VALUE = #{jobTriggerValue, jdbcType=VARCHAR},
+		</if>
+		<if test="latestRunTime != null">
+		JOB_LATEST_RUN_TIME = #{latestRunTime, jdbcType=TIMESTAMP},
+		</if>
+		<if test="nextRunTime != null">
+		JOB_NEXT_RUN_TIME = #{nextRunTime, jdbcType=TIMESTAMP},
+		</if>
+		<if test="jobParam != null">
+		JOB_PARAM = #{jobParam, jdbcType=BLOB},
+		</if>
+		<if test="jobStatus != null">
+		JOB_STATUS = #{jobStatus, jdbcType=CHAR},
+		</if>
+		JOB_ID = #{jobId}
+		where
+			JOB_ID = #{jobId}
+	</update>
+	<select id="getById" parameterType="string" resultMap="SchedJobResult">
+		SELECT 
+			*
+		FROM TB_SCHED_JOB 
+		WHERE JOB_ID = #{id}
+	</select>
+	<select id="search" parameterType="map" resultMap="SchedJobResult">
+		SELECT 
+			*
+		FROM TB_SCHED_JOB 
+		order by job_name
+	</select>
+	
+	<insert id="insertHistory" parameterType="SchedJobHistory">
+		INSERT INTO 
+		TB_SCHED_JOB_HISTORY
+		(
+			HISTORY_ID,
+			JOB_RUN_TIME,
+			JOB_ID,
+			JOB_DATA
+		)
+		values
+		(
+			#{historyId, jdbcType=CHAR},
+			#{jobRunTime, jdbcType=TIMESTAMP},
+			#{jobId, jdbcType=CHAR},
+			#{jobData, jdbcType=BLOB},
+		)
+	</insert>
+	<select id="searchHistory" parameterType="map" resultMap="JobHistoryResult">
+		SELECT * FROM TB_SCHED_JOB_HISTORY
+		<where>
+			<if test="jobId != null and jobId != ''">
+			job_id = #{jobId}
+			</if>
+		</where>
+		ORDER BY JOB_ID,JOB_RUN_TIME DESC
+	</select>
+	<select id="getHistoryById" parameterType="string" resultMap="JobHistoryResult">
+		SELECT * FROM TB_SCHED_JOB_HISTORY WHERE HISTORY_ID = #{id}
+	</select>
+</mapper>

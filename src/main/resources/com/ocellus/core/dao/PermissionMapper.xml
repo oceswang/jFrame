@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"     
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ocellus.core.dao.PermissionMapper">
+	
+	<resultMap id="PermissionResult" type="Permission">
+		<id column="PERMISSION_ID" property="permissionId" />
+		<result column="RESOURCE_ID" property="resourceId"/>
+		<result column="ROLE_ID" property="roleId"/>
+	</resultMap>
+	
+	
+	<insert id="insert" parameterType="Permission">
+		INSERT INTO TB_PERMISSION(
+			PERMISSION_ID,
+			RESOURCE_ID,
+			ROLE_ID
+		) VALUES (
+			#{permissionId, jdbcType=CHAR},
+			#{resourceId, jdbcType=CHAR},
+			#{roleId, jdbcType=CHAR}
+		)
+	</insert>
+	<select id="getById" parameterType="string" resultMap="PermissionResult">
+		SELECT 
+			*
+		FROM TB_PERMISSION 
+		WHERE PERMISSION_ID = #{id}
+	</select>
+
+	<select id="search" parameterType="map" resultMap="PermissionResult">
+		SELECT 
+			*
+		FROM TB_PERMISSION 
+		<where>
+			<if test="roleId != null and roleId != '' ">
+			ROLE_ID = #{roleId}
+			</if>
+			<if test="resourceId != null and resourceId != '' ">
+			AND RESOURCE_ID = #{resourceId}
+			</if>
+		</where>
+	</select>
+	<delete id="deleteByRoleId" parameterType="string">
+		DELETE FROM TB_PERMISSION WHERE ROLE_ID = #{roleId}
+	</delete>
+	
+</mapper>
